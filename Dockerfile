@@ -31,6 +31,12 @@ RUN pnpm ui:build
 
 ENV NODE_ENV=production
 
+# Install global npm packages (baked into image)
+RUN npm install -g mcporter
+
+# Install Tailscale
+RUN curl -fsSL https://tailscale.com/install.sh
+
 # Allow non-root user to write temp files during runtime/tests.
 RUN chown -R node:node /app
 
@@ -45,4 +51,6 @@ USER node
 # For container platforms requiring external health checks:
 #   1. Set OPENCLAW_GATEWAY_TOKEN or OPENCLAW_GATEWAY_PASSWORD env var
 #   2. Override CMD: ["node","dist/index.js","gateway","--allow-unconfigured","--bind","lan"]
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["node", "dist/index.js", "gateway", "--allow-unconfigured"]

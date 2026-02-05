@@ -1,5 +1,6 @@
 services:
   openclaw-gateway:
+    build: .
     image: ${OPENCLAW_IMAGE:-openclaw:local}
     restart: unless-stopped
     env_file:
@@ -8,9 +9,19 @@ services:
       HOME: /home/node
       TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+      GITHUB_SANDBOX_PAT: ${GITHUB_SANDBOX_PAT}
+      RENDER_API_TOKEN: ${RENDER_API_TOKEN}
+      TAILSCALE_AUTH_KEY: ${TAILSCALE_AUTH_KEY}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - tailscale-state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    devices:
+      - /dev/net/tun
     ports:
       # Keep private on VPS (recommended)
       - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
@@ -37,3 +48,6 @@ services:
     stdin_open: true
     tty: true
     entrypoint: ["node", "dist/index.js"]
+
+volumes:
+  tailscale-state:
